@@ -8,6 +8,7 @@ import SwiftUI
 struct NowPlayingView: View {
     @EnvironmentObject var playerVM: PlayerViewModel
     @Environment(\.dismiss) var dismiss
+    @State private var rotationAngle: Double = 0
     
     var body: some View {
         ZStack {
@@ -80,9 +81,36 @@ struct NowPlayingView: View {
         AlbumArtView(
             imageName: playerVM.currentTrack?.albumArt ?? "",
             size: UIScreen.main.bounds.width - 80,
-            cornerRadius: 8
+            cornerRadius: (UIScreen.main.bounds.width - 80) / 2
         )
+        .clipShape(Circle())
+        .overlay(
+            Circle()
+                .stroke(Color.gray.opacity(0.3), lineWidth: 4)
+        )
+        .overlay(
+            Circle()
+                .fill(Color.spotifyBlack)
+                .frame(width: 40, height: 40)
+        )
+        .rotationEffect(.degrees(rotationAngle))
         .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
+        .onAppear {
+            if playerVM.isPlaying {
+                startSpinning()
+            }
+        }
+        .onChange(of: playerVM.isPlaying) { _, isPlaying in
+            if isPlaying {
+                startSpinning()
+            }
+        }
+    }
+    
+    private func startSpinning() {
+        withAnimation(.linear(duration: 10).repeatForever(autoreverses: false)) {
+            rotationAngle += 360
+        }
     }
     
     private var trackInfoSection: some View {
